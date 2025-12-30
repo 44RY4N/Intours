@@ -2,42 +2,68 @@ const fs = require('fs');
 const express = require('express');
 const app = express();
 const PORT = 8000;
+const filter = require('./filter.js');
 
 app.use(express.json()); //middleware to parse json data
-
-const tours = JSON.parse(fs.readFileSync('./dev-data/data/tours-simple.json'));
-
-// app.get('/', (req, res) => {
-//   res.status(200).json({
-//     message: 'Welcome to Intours API',
-//     app: 'Intours',
-//   });
-// });
+const tours = JSON.parse(fs.readFileSync('./dev-data/data/csvjson.json'));
 
 //getting all tours
 app.get('/api/v1/tours', (req, res) => {
-  res
-    .status(200)
-    .json({ status: 'success', result: tours.length, data: tours });
+  let filteredTours;
+  const isFilter = req.query.filter === 'true'; //convert to boolean
+
+  //for sort requests
+  if (isFilter) {
+    filteredTours = filter(tours, req.query);
+  } else filteredTours = tours;
+
+  // for page requests
+  if (req.query.page) {
+    let limit = 10;
+    let page = req.query.page * 1 || 1;
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedTours = filteredTours.slice(startIndex, endIndex);
+    res.status(200).json({
+      status: 'success',
+      result: paginatedTours.length,
+      data: paginatedTours,
+    });
+  }
+  // else send back all tours
+  else {
+    res
+      .status(200)
+      .json({ status: 'success', result: tours.length, data: tours });
+  }
+});
+
+app.get('/api/v1/tours/:id', (req, res) => {
+  const ID = req.params.id * 1;
+  if (ID > tours.length || !Number.isInteger(ID)) {
+    return res
+      .status(404)
+      .json({ status: 'fail', message: 'Invalid ID Recieved' });
+  }
+  const tour = tours.find((el) => el.Serial === ID);
+  res.status(200).json({ status: 'success', data: { tour } });
 });
 
 //adding a new tour
 app.post('/api/v1/tours', (req, res) => {
-  newID = tours[tours.length - 1].id + 1;
-  const newTour = Object.assign({ id: newID }, req.body);
+  const newID = tours[tours.length - 1].Serial + 1;
+  console.log(tours.length);
+  const newTour = Object.assign({ Serial: newID }, req.body);
   tours.push(newTour);
-  fs.writeFile(
-    './dev-data/data/tours-simple.json',
-    JSON.stringify(tours),
-    (err) => {
-      if (err) {
-        return res
-          .status(500)
-          .json({ status: 'fail', message: 'Internal Server Error' });
-      }
-      res.status(201).json({ status: 'success', data: { tour: newTour } });
-    },
-  );
+  fs.writeFile('./dev-data/data/csvjson.json', JSON.stringify(tours), (err) => {
+    if (err) {
+      return res
+        .status(500)
+        .json({ status: 'fail', message: 'Internal Server Error' });
+    }
+    console.log('Successfully added a new Tour ✅');
+    res.status(201).json({ status: 'success', data: { tour: newTour } });
+  });
 });
 
 app.listen(PORT, () => {

@@ -29,14 +29,14 @@ project/
 │   └── data/
 │       └── csvjson.json
 │
-├── filters/
-│   ├── filterByRegion.js
-│   ├── filterByState.js
-│   ├── filterByRating.js
-│   ├── filterByName.js
-│   └── index.js
-│
-├── server.js
+├── filter.js
+├── filterByFeild.js
+├── app.js
+│ 
+├──.prettierrc
+├──.gitignore
+├── package-lock.json
+├── package.json
 └── README.md
 ```
 

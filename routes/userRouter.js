@@ -2,6 +2,13 @@ const express = require('express');
 const controller = require(`${__dirname}/../controllers/userController.js`);
 const router = express.Router();
 
+//MiddleWares
+
+router.param('id', (req, res, next, val) => {
+  console.log(`Received ID: ${val}`);
+  next();
+});
+
 router.route('/').get(controller.getUsers).post(controller.postUser);
 
 //get User by id //patching a User by ID //delte a User

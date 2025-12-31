@@ -2,6 +2,8 @@ const express = require('express');
 const controller = require(`${__dirname}/../controllers/tourController.js`);
 const router = express.Router();
 
+router.param('id', controller.checkId);
+
 router.route('/').get(controller.getTours).post(controller.postTour);
 
 //get tour by id //patching a tour by ID //delte a tour

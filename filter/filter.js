@@ -4,34 +4,27 @@ const controller = require(`${__dirname}/../controllers/filterController.js`);
 
 const filter = (tours, query) => {
   // Formatted Structure for Ease of Access at FrontEnd
-  let result = {
-    meta: {
-      states: [],
-      region: null,
-    },
-    data: tours,
-  };
 
   if (query.region) {
-    const regionResult = controller.filterByRegion(result.data, query.region);
-    result.data = regionResult.data;
-    result.meta.states = regionResult.states;
-    result.meta.region = query.region;
+    const regionResult = controller.filterByRegion(tours.data, query.region);
+    tours.data = regionResult.data;
+    tours.meta.states = regionResult.states;
+    tours.meta.region = query.region;
   }
 
   if (query.state) {
-    result.data = controller.filterByState(result.data, query.state);
+    tours.data = controller.filterByState(tours.data, query.state);
   }
 
   if (query.name) {
-    result.data = controller.filterByName(result.data, query.name);
+    tours.data = controller.filterByName(tours.data, query.name);
   }
 
   if (query.rating) {
-    result.data = controller.filterByRating(result.data, query.rating);
+    tours.data = controller.filterByRating(tours.data, query.rating);
   }
 
-  return result;
+  return tours;
 };
 
 module.exports = filter;

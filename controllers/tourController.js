@@ -1,6 +1,6 @@
 const fs = require('fs');
 const filter = require(`${__dirname}/../filter/filter.js`);
-const tours = JSON.parse(
+const toursData = JSON.parse(
   fs.readFileSync(`${__dirname}/../dev-data/data/csvjson.json`),
 );
 
@@ -8,39 +8,33 @@ const tours = JSON.parse(
 // GETTING TOURS
 
 exports.getTours = (req, res) => {
-  let filteredTours, filteredTourData;
-  const isFilter = req.query.filter === 'true'; //convert to boolean
+  // standard Format
+  let tours = {
+    meta: {
+      states: [],
+      region: null,
+    },
+    data: toursData,
+  };
 
+  const isFilter = req.query.filter === 'true'; //convert to boolean
   //for sort requests
   if (isFilter) {
-    filteredTours = filter(tours, req.query);
-    filteredTourData = filteredTours.data;
-  } else filteredTourData = tours;
-
+    tours = filter(tours, req.query);
+  }
   // for page requests
   if (req.query.page) {
-    let limit = 10;
-    let page = req.query.page * 1 || 1;
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedTours = filteredTourData.slice(startIndex, endIndex);
-    res.status(200).json({
-      status: 'success',
-      result: paginatedTours.length,
-      filter: isFilter,
-      meta: filteredTours.meta,
-      data: paginatedTours,
-    });
+    tours.data = getPaginatedTours(req, tours);
   }
+
   // else send back all tours
-  else {
-    res.status(200).json({
-      status: 'success',
-      result: tours.length,
-      filter: isFilter,
-      data: tours,
-    });
-  }
+  res.status(200).json({
+    status: 'success',
+    result: tours.data.length,
+    meta: tours.meta,
+    filter: isFilter,
+    data: tours.data,
+  });
 };
 ///////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////
@@ -50,10 +44,8 @@ exports.getTours = (req, res) => {
 exports.getTourById = (req, res) => {
   const ID = req.params.id * 1;
   const tour = tours.find((el) => el.Serial === ID);
-  if (!tour || !Number.isInteger(ID)) {
-    return res
-      .status(404)
-      .json({ status: 'fail', message: 'Invalid ID Recieved/Tour not Found' });
+  if (!tour) {
+    return res.status(404).json({ status: 'fail', message: 'Tour not Found' });
   }
 
   res.status(200).json({ status: 'success', data: { tour } });
@@ -86,13 +78,10 @@ exports.postTour = (req, res) => {
 // UPDATE A TOUR
 
 exports.patchTour = (req, res) => {
-  const ID = Number(req.params.id);
   const index = tours.findIndex((tour) => tour.Serial === ID); // find tourIndex
 
-  if (!Number.isInteger(ID) || index === -1) {
-    return res
-      .status(404)
-      .json({ status: 'fail', message: 'Invalid ID or Tour Not Found' });
+  if (index === -1) {
+    return res.status(404).json({ status: 'fail', message: 'Tour Not Found' });
   }
 
   tours[index] = {
@@ -120,10 +109,8 @@ exports.deleteTour = (req, res) => {
   const ID = Number(req.params.id);
   const index = tours.findIndex((tour) => tour.Serial === ID); // find tourIndex
 
-  if (!Number.isInteger(ID) || index === -1) {
-    return res
-      .status(404)
-      .json({ status: 'fail', message: 'Invalid ID or Tour Not Found' });
+  if (index === -1) {
+    return res.status(404).json({ status: 'fail', message: 'Tour Not Found' });
   }
 
   tours.splice(index, 1); // deleting from tours
@@ -137,4 +124,22 @@ exports.deleteTour = (req, res) => {
     console.log('Successfully Deleted the Tour ✅');
     res.status(204).json({ status: 'success', data: null });
   });
+};
+
+exports.checkId = (req, res, next, val) => {
+  if (!Number.isInteger(req.params.id)) {
+    return res.status(500).json({
+      status: 'fail',
+      message: `Invalid ID Send an Integer Received NAN: ${val}`,
+    });
+  }
+  next();
+};
+
+const getPaginatedTours = (req, tours) => {
+  let limit = Number(req.query.limit);
+  let pageNum = Number(req.query.page) || 1;
+  const startIndex = (pageNum - 1) * limit;
+  const endIndex = startIndex + limit;
+  return tours.data.slice(startIndex, endIndex);
 };

@@ -4,7 +4,10 @@ const router = express.Router();
 
 router.param('id', controller.checkId);
 
-router.route('/').get(controller.getTours).post(controller.postTour);
+router
+  .route('/')
+  .get(controller.getTours)
+  .post(controller.checkBody, controller.postTour);
 
 //get tour by id //patching a tour by ID //delte a tour
 router

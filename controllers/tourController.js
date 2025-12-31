@@ -149,6 +149,17 @@ exports.checkId = (req, res, next, val) => {
   next();
 };
 
+exports.checkBody = (req, res, next) => {
+  console.log(`checked body: ${req.body}`);
+  if (!req.body) {
+    res
+      .status(400)
+      .json({ status: 'error', message: 'Bad Request', data: req.body });
+  }
+
+  next();
+};
+
 const getPaginatedTours = (req, tours) => {
   let limit = Number(req.query.limit);
   let pageNum = Number(req.query.page) || 1;

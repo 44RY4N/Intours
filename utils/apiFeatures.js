@@ -1,3 +1,4 @@
+//class implementation of API-features
 class APIFeatures {
   constructor(queryObj, queryString) {
     this.queryObj = queryObj;

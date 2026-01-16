@@ -2,17 +2,17 @@ const mongoose = require('mongoose');
 
 const tourSchema = new mongoose.Schema(
   {
-    Serial: { type: Number },
-    Zone: { type: String, required: [true, 'Zone is required'] },
-    State: { type: String, required: [true, 'State is required'] },
-    City: { type: String, required: [true, 'City is required'] },
-    Name: {
+    serial: { type: Number },
+    zone: { type: String, required: [true, 'Zone is required'] },
+    state: { type: String, required: [true, 'State is required'] },
+    city: { type: String, required: [true, 'City is required'] },
+    name: {
       type: String,
       required: [true, 'Name is required'],
       unique: [true, 'Name Must be Unique'],
       trim: true,
     },
-    Type: { type: String },
+    type: { type: String },
     establishmentYear: { type: Number, alias: 'Establishment Year' },
     timeNeededToVisitInHrs: {
       type: Number,
@@ -22,8 +22,8 @@ const tourSchema = new mongoose.Schema(
     entranceFeeInInr: { type: Number, alias: 'Entrance Fee in INR' },
     airportWith50kmRadius: { type: String, alias: 'Airport with 50km Radius' },
     weeklyOff: { type: String, alias: 'Weekly Off' },
-    Significance: { type: String },
-    dSLRAllowed: { type: String, alias: 'DSLR Allowed' },
+    significance: { type: String },
+    dslrAllowed: { type: String, alias: 'DSLR Allowed' },
     numberOfGoogleReviewInLakhs: {
       type: Number,
       alias: 'Number of google review in lakhs',
